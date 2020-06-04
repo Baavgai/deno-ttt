@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "es2018",
+    "lib": [
+      "es2018",
+      "DOM"
+    ],
+    "noImplicitAny": false,
+    "paths": {
+      "http://*": [
+        "../../../../AppData/Local/deno/deps/http/*"
+      ],
+      "https://*": [
+        "../../../../AppData/Local/deno/deps/http/*"
+      ]
+    }
+  },
+  "exclude": [
+    "dist"
+  ]
+}

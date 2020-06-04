@@ -1,0 +1,1 @@
+export * from "https://raw.githubusercontent.com/Baavgai/deno-funcs/master/graph2D/mod.ts";
