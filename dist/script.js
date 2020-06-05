@@ -555,23 +555,56 @@ System.register(
   },
 );
 System.register(
+  "file:///C:/Users/brett/source/repos/github_baavgai/deno-ttt/app/canvas",
+  [],
+  function (exports_11, context_11) {
+    "use strict";
+    var fillRect, textCenter;
+    var __moduleName = context_11 && context_11.id;
+    return {
+      setters: [],
+      execute: function () {
+        exports_11(
+          "fillRect",
+          fillRect = (ctx, r, fillStyle) => {
+            ctx.fillStyle = fillStyle;
+            ctx.fillRect(r.x, r.y, r.width, r.height);
+          },
+        );
+        exports_11(
+          "textCenter",
+          textCenter = (ctx, r, text) => {
+            const x = r.x + Math.floor(r.width / 2);
+            const y = r.y + Math.floor(r.height / 2);
+            ctx.textBaseline = "middle";
+            ctx.textAlign = "center";
+            ctx.fillText(text, x, y);
+          },
+        );
+      },
+    };
+  },
+);
+System.register(
   "file:///C:/Users/brett/source/repos/github_baavgai/deno-ttt/app/app",
   [
     "file:///C:/Users/brett/source/repos/github_baavgai/deno-ttt/app/deps",
     "file:///C:/Users/brett/source/repos/github_baavgai/deno-ttt/app/tttEngine",
+    "file:///C:/Users/brett/source/repos/github_baavgai/deno-ttt/app/canvas",
   ],
-  function (exports_11, context_11) {
+  function (exports_12, context_12) {
     "use strict";
     var deps_ts_1,
       tttEngine_ts_1,
+      canvas_ts_1,
+      Color,
       calcMetrics,
       addListener,
       initContext,
-      fillRect,
       draw,
       createStateContainer,
       createApp;
-    var __moduleName = context_11 && context_11.id;
+    var __moduleName = context_12 && context_12.id;
     return {
       setters: [
         function (deps_ts_1_1) {
@@ -580,8 +613,17 @@ System.register(
         function (tttEngine_ts_1_1) {
           tttEngine_ts_1 = tttEngine_ts_1_1;
         },
+        function (canvas_ts_1_1) {
+          canvas_ts_1 = canvas_ts_1_1;
+        },
       ],
       execute: function () {
+        Color = {
+          Background: "#000",
+          Hover: "#004",
+          Line: "#0ff",
+          Player: "#00f",
+        };
         calcMetrics = (p) => {
           const boxSize = deps_ts_1.createSize(
             Math.floor((p.size - (p.barSize * 2 + p.gutterSize * 2)) / 3),
@@ -607,9 +649,25 @@ System.register(
               ),
             );
           }
-          return { boxSize, cells };
+          // const viewPort: Size;
+          // const boardBounds = createRect(cells[0].x, cells[0].y, cells[8].x + cells[8].width, cells[8].y + cells[8].height);
+          // const boardBounds = createRect(cells[0].x, cells[0].y, cells[8].x, cells[8].y);
+          const boardBounds = deps_ts_1.createRect(
+            cells[0].x,
+            cells[0].y,
+            cells[8].x + cells[8].width - cells[0].x,
+            cells[8].y + cells[8].height - cells[0].y,
+          );
+          const viewPort = deps_ts_1.createRect(
+            0,
+            0,
+            boardBounds.width + p.gutterSize * 2,
+            boardBounds.height + p.gutterSize * 2,
+          );
+          const fontSize = Math.floor(boxSize.height * 0.8);
+          return { boxSize, cells, boardBounds, viewPort, fontSize };
         };
-        addListener = ({ ele, cells, size }, hoverListener, clickListener) => {
+        addListener = ({ ele, cells }, hoverListener, clickListener) => {
           const canPos = deps_ts_1.createPoint(ele.offsetLeft, ele.offsetTop);
           const pagePos = (e) => deps_ts_1.createPoint(e.pageX, e.pageY);
           const transPos = (e) => deps_ts_1.subPoint(pagePos(e), canPos);
@@ -626,28 +684,22 @@ System.register(
           ele.height = p.size;
           return { ele, ctx };
         };
-        fillRect = (ctx, r, fillStyle) => {
-          ctx.fillStyle = fillStyle;
-          ctx.fillRect(r.x, r.y, r.width, r.height);
-        };
         draw = (p) => {
-          p.ctx.fillStyle = "#000";
-          p.ctx.fillRect(0, 0, p.size, p.size);
-          const fontSize = Math.floor(p.boxSize.height * 0.8);
-          p.ctx.font = `sans-serif`;
-          p.ctx.font = `${fontSize}px bold`;
+          canvas_ts_1.fillRect(p.ctx, p.viewPort, Color.Background);
+          canvas_ts_1.fillRect(p.ctx, p.boardBounds, Color.Line);
+          p.ctx.font = `${p.fontSize}px bold sans-serif`;
           p.cells.forEach((cell, idx) => {
             const value = p.board[idx];
             if (value === " ") {
-              fillRect(p.ctx, cell, idx === p.hover ? "#f00" : "#0f0");
+              canvas_ts_1.fillRect(
+                p.ctx,
+                cell,
+                idx === p.hover ? Color.Hover : Color.Background,
+              );
             } else {
-              fillRect(p.ctx, cell, "#000");
-              const x = cell.x + Math.floor(cell.width / 2);
-              const y = cell.y + Math.floor(cell.height / 2);
-              p.ctx.fillStyle = "#00f";
-              p.ctx.textBaseline = "middle";
-              p.ctx.textAlign = "center";
-              p.ctx.fillText(p.board[idx], x, y);
+              canvas_ts_1.fillRect(p.ctx, cell, Color.Background);
+              p.ctx.fillStyle = Color.Player;
+              canvas_ts_1.textCenter(p.ctx, cell, p.board[idx]);
             }
           });
         };
@@ -662,7 +714,7 @@ System.register(
             },
           ];
         };
-        exports_11(
+        exports_12(
           "createApp",
           createApp = (cfg) => {
             const p = { ...initContext(cfg), ...calcMetrics(cfg) };
@@ -694,10 +746,10 @@ System.register(
 System.register(
   "file:///C:/Users/brett/source/repos/github_baavgai/deno-ttt/app/index",
   ["file:///C:/Users/brett/source/repos/github_baavgai/deno-ttt/app/app"],
-  function (exports_12, context_12) {
+  function (exports_13, context_13) {
     "use strict";
     var app_ts_1;
-    var __moduleName = context_12 && context_12.id;
+    var __moduleName = context_13 && context_13.id;
     return {
       setters: [
         function (app_ts_1_1) {

@@ -1,12 +1,19 @@
-import { Rect, Size, createSize, subPoint, createPoint, inRect, translateRect } from "./deps.ts";
+import { Rect, Size, createSize, subPoint, createPoint, inRect, translateRect, createRect } from "./deps.ts";
 import { Config } from "./types.ts";
 import { Board, EmptyBoard, move } from "./tttEngine.ts";
+import { fillRect, textCenter } from "./canvas.ts";
 
-interface Props {
+interface Metrics {
+  boxSize: Size;
+  viewPort: Rect;
+  boardBounds: Rect;
+  cells: Rect[];
+  fontSize: number;
+}
+
+interface Props extends Metrics {
   ele: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  boxSize: Size;
-  cells: Rect[];
 }
 
 interface State {
@@ -14,18 +21,32 @@ interface State {
   board: Board
 }
 
-type AppProps = Config & Props & State;
+type AppProps = Props & State;
 
-const calcMetrics = (p: Config) => {
+const Color = {
+  Background: "#000",
+  Hover: "#004",
+  Line: "#0ff",
+  Player: "#00f",
+}
+
+
+const calcMetrics = (p: Config): Metrics => {
   const boxSize = createSize(Math.floor((p.size - (p.barSize * 2 + p.gutterSize * 2)) / 3));
   const cells: Rect[] = [{ ...boxSize, x: p.gutterSize, y: p.gutterSize }];
   cells.push(translateRect(cells[0], { y: 0, x: p.barSize + boxSize.width }));
   cells.push(translateRect(cells[1], { y: 0, x: p.barSize + boxSize.width }));
   for (let i = 0; i < 6; i++) { cells.push(translateRect(cells[i], { x: 0, y: p.barSize + boxSize.height })); }
-  return { boxSize, cells };
+  // const viewPort: Size;
+  // const boardBounds = createRect(cells[0].x, cells[0].y, cells[8].x + cells[8].width, cells[8].y + cells[8].height);
+  // const boardBounds = createRect(cells[0].x, cells[0].y, cells[8].x, cells[8].y);
+  const boardBounds = createRect(cells[0].x, cells[0].y, cells[8].x + cells[8].width - cells[0].x, cells[8].y + cells[8].height - cells[0].y);
+  const viewPort = createRect(0, 0, boardBounds.width + p.gutterSize * 2, boardBounds.height + p.gutterSize * 2);
+  const fontSize = Math.floor(boxSize.height * 0.8);
+  return { boxSize, cells, boardBounds, viewPort, fontSize };
 };
 
-const addListener = ({ ele, cells, size }: Config & Props, hoverListener: (cell: number) => void, clickListener: (cell: number) => void) => {
+const addListener = ({ ele, cells }: Config & Props, hoverListener: (cell: number) => void, clickListener: (cell: number) => void) => {
   const canPos = createPoint(ele.offsetLeft, ele.offsetTop);
   const pagePos = (e: MouseEvent) => createPoint(e.pageX, e.pageY);
   const transPos = (e: MouseEvent) => subPoint(pagePos(e), canPos);
@@ -44,32 +65,20 @@ const initContext = (p: Config) => {
 };
 
 
-const fillRect = (ctx: CanvasRenderingContext2D, r: Rect, fillStyle: string | CanvasGradient | CanvasPattern) => {
-  ctx.fillStyle = fillStyle;
-  ctx.fillRect(r.x, r.y, r.width, r.height);
-};
-
-
 const draw = (p: AppProps) => {
-  p.ctx.fillStyle = "#000";
-  p.ctx.fillRect(0, 0, p.size, p.size);
-  const fontSize = Math.floor(p.boxSize.height * 0.8);
-  p.ctx.font = `sans-serif`;
-  p.ctx.font = `${fontSize}px bold`;
-
+  fillRect(p.ctx, p.viewPort, Color.Background);
+  fillRect(p.ctx, p.boardBounds, Color.Line);
+  p.ctx.font = `${p.fontSize}px bold sans-serif`;
 
   p.cells.forEach((cell, idx) => {
     const value = p.board[idx];
     if (value === " ") {
-      fillRect(p.ctx, cell, idx === p.hover ? "#f00" : "#0f0");
+      fillRect(p.ctx, cell, idx === p.hover ? Color.Hover : Color.Background);
+
     } else {
-      fillRect(p.ctx, cell, "#000");
-      const x = cell.x + Math.floor(cell.width / 2);
-      const y = cell.y + Math.floor(cell.height / 2);
-      p.ctx.fillStyle = "#00f";
-      p.ctx.textBaseline = "middle";
-      p.ctx.textAlign = "center";
-      p.ctx.fillText(p.board[idx], x, y);
+      fillRect(p.ctx, cell, Color.Background);
+      p.ctx.fillStyle = Color.Player;
+      textCenter(p.ctx, cell, p.board[idx])
     }
   });
 }
@@ -88,7 +97,7 @@ const createStateContainer = <TState>(initState: TState): [() => TState, (f: (st
 export const createApp = (cfg: Config) => {
   const p: Props = { ...initContext(cfg), ...calcMetrics(cfg) } as const;
   const [getState, setState] = createStateContainer<State>({ hover: -1, board: EmptyBoard });
-  const refresh = state => draw({...cfg, ...p, ...state })
+  const refresh = state => draw({ ...cfg, ...p, ...state })
 
   const updateHover = (cell: number) => {
     if (cell !== getState().hover) {
@@ -103,6 +112,6 @@ export const createApp = (cfg: Config) => {
       }));
     }
   };
-  addListener({...p, ...cfg}, updateHover, select);
+  addListener({ ...p, ...cfg }, updateHover, select);
   refresh(getState());
 };
