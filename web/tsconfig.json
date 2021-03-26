@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "http://*": [
+        "../../../../../.cache/deno/deps/http/*"
+      ],
+      "https://*": [
+        "../../../../../.cache/deno/deps/http/*"
+      ]
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "run deno build",
+            "type": "shell",
+            "command": "deno bundle -c ./tsconfig.json ./app/index.ts ./dist/script.js",
+            "problemMatcher": [],
+            "group": {
+                "isDefault": true,
+                "kind": "build"
+            }
+        }
+    ]
+}

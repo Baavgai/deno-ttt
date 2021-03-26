@@ -1,3 +1,6 @@
+// <reference lib="./lib.dom.d.ts" />
+/// <reference lib="dom" />
+
 import { Rect, Size, createSize, subPoint, createPoint, inRect, translateRect, createRect } from "./deps.ts";
 import { Config } from "./types.ts";
 import { Board, EmptyBoard, move } from "./tttEngine.ts";
@@ -97,7 +100,7 @@ const createStateContainer = <TState>(initState: TState): [() => TState, (f: (st
 export const createApp = (cfg: Config) => {
   const p: Props = { ...initContext(cfg), ...calcMetrics(cfg) } as const;
   const [getState, setState] = createStateContainer<State>({ hover: -1, board: EmptyBoard });
-  const refresh = state => draw({ ...cfg, ...p, ...state })
+  const refresh = (state:State) => draw({ ...cfg, ...p, ...state })
 
   const updateHover = (cell: number) => {
     if (cell !== getState().hover) {

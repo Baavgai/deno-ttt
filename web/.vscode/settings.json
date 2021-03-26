@@ -1,0 +1,7 @@
+{
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "deno.enable": true,
+  "deno.lint": false,
+  "deno.unstable": false,
+}

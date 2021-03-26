@@ -4,7 +4,7 @@ Mostly want to test a complete deno project.
 
 ## how to bundle
 
-    deno bundle -c ./tsconfig.json ./app/index.ts ./dist/script.js
+    deno bundle -c ./tsconfig.json ./src/mod.ts ./dist/script.js
 
 ## setup
 
